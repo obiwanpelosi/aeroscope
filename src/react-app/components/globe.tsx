@@ -68,14 +68,15 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({ planeCoords = { lat: 0,
       polygonCapColor={() => 'rgba(0, 255, 255, 0.05)'}
       polygonSideColor={() => 'rgba(0, 100, 255, 0.15)'}
       polygonStrokeColor={() => '#00ffff'}
-      polygonLabel={({ properties: d } ) => `
-          ${d.NAME}
+      polygonLabel={(d: { properties?: { NAME?: string } }) => `
+          ${d.properties?.NAME || ''}
         `}
       customLayerData={planeData}
       customThreeObject={d => (d as { obj: THREE.Object3D }).obj}
       customThreeObjectUpdate={(obj, d) => {
         if(globeEl.current) {
-          Object.assign(obj.position, globeEl.current.getCoords(d.lat, d.lng, 0.08));
+          const { lat, lng } = d as { lat: number; lng: number };
+          Object.assign(obj.position, globeEl.current.getCoords(lat, lng, 0.08));
         }
         obj.lookAt(0, 0, 0); // Optional: face earth center
       }}

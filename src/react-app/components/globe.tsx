@@ -19,6 +19,7 @@ interface GlobeComponentProps {
 const GlobeComponent: React.FC<GlobeComponentProps> = ({ planeCoords = { lat: 0, lng: 0 } }) => {
   const globeEl = useRef<GlobeMethods>(undefined);
   const [planeObj, setPlaneObj] = useState<THREE.Object3D | null>(null);
+  const [showPolygons, setShowPolygons] = useState(true);
 
 
   const planeData = useMemo(() => {
@@ -29,7 +30,7 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({ planeCoords = { lat: 0,
           obj: planeObj.clone()
         }]
       : [];
-  }, [planeCoords, planeObj]);
+  }, [planeCoords, planeObj, showPolygons]);
   useEffect(() => {
     const loader = new GLTFLoader();
     loader.load('/plane.gltf', gltf => {
@@ -47,7 +48,8 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({ planeCoords = { lat: 0,
   }, [planeCoords]);
 
   return (
-    <Globe
+    <div style={{ position: 'relative' }}>
+      <Globe
       ref={globeEl}
     //   globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
       globeImageUrl={earthImage}
@@ -64,7 +66,7 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({ planeCoords = { lat: 0,
       hexPolygonColor={() => {
         return colours[Math.floor(Math.random() * colours.length)];
       }}
-      polygonsData={countries.features}
+      polygonsData={showPolygons ? countries.features : undefined}
       polygonCapColor={() => 'rgba(0, 255, 255, 0.05)'}
       polygonSideColor={() => 'rgba(0, 100, 255, 0.15)'}
       polygonStrokeColor={() => '#00ffff'}
@@ -81,6 +83,30 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({ planeCoords = { lat: 0,
         obj.lookAt(0, 0, 0); // Optional: face earth center
       }}
     />
+    <div style={{ 
+      position: 'absolute', 
+      bottom: '20px', 
+      left: '50%', 
+      transform: 'translateX(-50%)',
+      zIndex: 1000
+    }}>
+      <button 
+        onClick={() => setShowPolygons(!showPolygons)}
+        style={{
+          padding: '8px 16px',
+          backgroundColor: showPolygons ? '#4CAF50' : '#f44336',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+        }}
+      >
+        {showPolygons ? 'Hide' : 'Show'} grid lines
+      </button>
+    </div>
+  </div>
   );
 };
 

@@ -64,7 +64,7 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({ planeCoords = { lat: 0,
       hexPolygonColor={() => {
         return colours[Math.floor(Math.random() * colours.length)];
       }}
-      // polygonsData={countries.features}
+      polygonsData={countries.features}
       polygonCapColor={() => 'rgba(0, 255, 255, 0.05)'}
       polygonSideColor={() => 'rgba(0, 100, 255, 0.15)'}
       polygonStrokeColor={() => '#00ffff'}

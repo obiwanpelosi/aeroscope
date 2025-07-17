@@ -85,22 +85,23 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({ planeCoords = { lat: 0,
     />
     <div style={{ 
       position: 'absolute', 
-      bottom: '20px', 
-      left: '50%', 
-      transform: 'translateX(-50%)',
+      top: '20px', 
+      right: '20px',
       zIndex: 1000
     }}>
       <button 
         onClick={() => setShowPolygons(!showPolygons)}
         style={{
-          padding: '8px 16px',
+          padding: '12px 20px',
           backgroundColor: showPolygons ? '#4CAF50' : '#f44336',
           color: 'white',
-          border: 'none',
-          borderRadius: '4px',
+          border: '2px solid white',
+          borderRadius: '6px',
           cursor: 'pointer',
-          fontSize: '14px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          fontSize: '16px',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.5)',
+          minWidth: '120px'
         }}
       >
         {showPolygons ? 'Hide' : 'Show'} grid lines

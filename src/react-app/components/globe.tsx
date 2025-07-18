@@ -26,6 +26,7 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
   const globeEl = useRef<GlobeMethods>(undefined);
   const [planeObj, setPlaneObj] = useState<THREE.Object3D | null>(null);
   const [showPolygons, setShowPolygons] = useState(true);
+  const [places, setPlaces] = useState([]);
 
   const planeData = useMemo(() => {
     return currentPlane && planeObj
@@ -38,6 +39,28 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
         ]
       : [];
   }, [currentPlane, planeObj, showPolygons]);
+
+  const markerSvg = `<svg viewBox="-4 0 36 36">
+    <path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path>
+    <circle fill="black" cx="14" cy="14" r="7"></circle>
+  </svg>`;
+
+  const pointsData = useMemo(() => {
+    return [
+      {
+        lat: departure.lat,
+        lng: departure.lng,
+        color: '#ff0000',
+        size: 0.5,
+      },
+      {
+        lat: destination.lat,
+        lng: destination.lng,
+        color: '#00ff00',
+        size: 0.5,
+      },
+    ];
+  }, [departure, destination]);
 
   const expectedFlightPathData = useMemo(() => {
     return {
@@ -58,6 +81,20 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
       color: ["#20cb5fff", "#20cb5fff"],
     };
   }, [departure, currentPlane]);
+
+  async function getCities(){
+    try{
+      const response = await fetch('/cities.json');
+      if(response.ok){
+        console.log("response gotten")
+        const data = await response.json();
+        console.log(data, "data")
+        setPlaces(data.features);
+      }
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    }
+  }
   useEffect(() => {
     const loader = new GLTFLoader();
     loader.load("/plane.gltf", (gltf) => {
@@ -65,6 +102,7 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
       plane.scale.set(0.5, 0.5, 0.5);
       setPlaneObj(plane);
     });
+    getCities()
   }, []);
 
   useEffect(() => {
@@ -101,13 +139,13 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
         // pointLng="lng"
         // pointAltitude={0.02}
         // pointColor={() => 'red'}
-        hexPolygonsData={countries.features}
-        hexPolygonResolution={3}
-        hexPolygonMargin={0.7}
-        hexPolygonUseDots={true}
-        hexPolygonColor={() => {
-          return colours[Math.floor(Math.random() * colours.length)];
-        }}
+        // hexPolygonsData={countries.features}
+        // hexPolygonResolution={3}
+        // hexPolygonMargin={0.7}
+        // hexPolygonUseDots={true}
+        // hexPolygonColor={() => {
+        //   return colours[Math.floor(Math.random() * colours.length)];
+        // }}
         polygonsData={showPolygons ? countries.features : undefined}
         polygonCapColor={() => "rgba(0, 255, 255, 0.05)"}
         polygonSideColor={() => "rgba(0, 100, 255, 0.15)"}
@@ -115,6 +153,12 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
         polygonLabel={(d: { properties?: { NAME?: string } }) => `
           ${d.properties?.NAME || ""}
         `}
+        // pointsData={pointsData}
+        // pointLat="lat"
+        // pointLng="lng"
+        // pointColor="color"
+        // pointAltitude={0.04}
+        // pointRadius="size"
         customLayerData={planeData}
         customThreeObject={(d) => (d as { obj: THREE.Object3D }).obj}
         customThreeObjectUpdate={(obj, d) => {
@@ -130,11 +174,39 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
             obj.rotation.y = bearing;
           }
         }}
+
+        // Flight path
         arcsData={[expectedFlightPathData, actualFlightPathData]}
         arcColor={"color"}
         arcStroke={0.8}
         arcAltitude={0.1}
-      />
+
+        // Labels for cities
+        labelsData={places}
+        labelLat={d => d.properties.latitude}
+        labelLng={d => d.properties.longitude}
+        labelText={d => d.properties.name}
+        labelSize={d => Math.sqrt(d.properties.pop_max) * 4e-4}
+        labelDotRadius={d => Math.sqrt(d.properties.pop_max) * 4e-4}
+        labelColor={() => 'rgba(255, 165, 0, 0.75)'}
+        labelResolution={2}
+        labelAltitude={0.02}
+
+        // Markers for departure and destination cordinates
+        htmlElementsData={pointsData}
+        htmlElement={d => {
+          const el = document.createElement('div');
+          el.innerHTML = markerSvg;
+          // el.style.color = d.color;
+          el.style.width = `40px`;
+          el.style.transition = 'opacity 250ms';
+
+          el.style['pointer-events'] = 'auto';
+          el.style.cursor = 'pointer';
+          el.onclick = () => console.info(d);
+          return el;
+        }}
+        />
       <div
         style={{
           position: "absolute",

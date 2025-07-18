@@ -3,13 +3,23 @@ import Globe, { GlobeMethods } from "react-globe.gl";
 import earthImage from "../assets/earth-night.jpg";
 import nightSkyImage from "../assets/night-sky.png";
 import { countries } from "../constants/countries";
-import { colours } from "../constants/colours";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import * as THREE from "three";
 
 interface PlaneCoords {
   lat: number;
   lng: number;
+}
+
+interface CityProperties {
+  latitude: number;
+  longitude: number;
+  name: string;
+  pop_max: number;
+}
+
+interface CityFeature {
+  properties: CityProperties;
 }
 
 interface GlobeComponentProps {
@@ -26,7 +36,7 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
   const globeEl = useRef<GlobeMethods>(undefined);
   const [planeObj, setPlaneObj] = useState<THREE.Object3D | null>(null);
   const [showPolygons, setShowPolygons] = useState(true);
-  const [places, setPlaces] = useState([]);
+  const [places, setPlaces] = useState<CityFeature[]>([]);
 
   const planeData = useMemo(() => {
     return currentPlane && planeObj
@@ -131,7 +141,6 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
     <div style={{ position: "relative" }}>
       <Globe
         ref={globeEl}
-        //   globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
         globeImageUrl={earthImage}
         backgroundImageUrl={nightSkyImage}
         // pointsData={planeData}
@@ -183,11 +192,11 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
 
         // Labels for cities
         labelsData={places}
-        labelLat={d => d.properties.latitude}
-        labelLng={d => d.properties.longitude}
-        labelText={d => d.properties.name}
-        labelSize={d => Math.sqrt(d.properties.pop_max) * 4e-4}
-        labelDotRadius={d => Math.sqrt(d.properties.pop_max) * 4e-4}
+        labelLat={(d: any) => d.properties.latitude}
+        labelLng={(d: any) => d.properties.longitude}
+        labelText={(d: any) => d.properties.name}
+        labelSize={(d: any) => Math.sqrt(d.properties.pop_max) * 4e-4}
+        labelDotRadius={(d: any) => Math.sqrt(d.properties.pop_max) * 4e-4}
         labelColor={() => 'rgba(255, 165, 0, 0.75)'}
         labelResolution={2}
         labelAltitude={0.02}
@@ -201,7 +210,7 @@ const GlobeComponent: React.FC<GlobeComponentProps> = ({
           el.style.width = `40px`;
           el.style.transition = 'opacity 250ms';
 
-          el.style['pointer-events'] = 'auto';
+                     (el.style as any)['pointer-events'] = 'none';
           el.style.cursor = 'pointer';
           el.onclick = () => console.info(d);
           return el;
